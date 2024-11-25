@@ -5,7 +5,6 @@ on:
       - main
     paths:
       - '_posts/**'  # _posts 폴더의 변경사항만 감지
-      - '_draft/**'  # 드래프트 포스트도 포함
   workflow_dispatch:  # 수동 실행 옵션
 
 permissions:
@@ -43,7 +42,8 @@ jobs:
 
       - name: IndexNow Setup
         run: |
-          echo ${{ secrets.INDEXNOW_KEY }} > _site/${{ secrets.INDEXNOW_KEY }}.txt
+          echo "${{ secrets.INDEXNOW_KEY }}" > "_site/${{ secrets.INDEXNOW_KEY }}.txt"
+          ls -la _site/  # 파일이 생성되었는지 확인
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
@@ -68,6 +68,10 @@ jobs:
       - name: Submit URLs to IndexNow
         uses: bojieyang/indexnow-action@v2
         with:
-          sitemap-location: "https://trendprov.github.io/sitemap.xml"  # 여기에 실제 도메인 입력
+          sitemap-location: "https://trendprov.github.io/sitemap.xml"
           key: ${{ secrets.INDEXNOW_KEY }}
           endpoint: "api.indexnow.org"
+          since: 24        # 24시간 이내의 변경사항 확인
+          since-unit: hour
+          limit: 200       # 한 번에 최대 200개 URL 제출
+          timeout: 30000   # 30초 타임아웃
