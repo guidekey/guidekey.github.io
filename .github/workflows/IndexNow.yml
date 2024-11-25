@@ -1,19 +1,20 @@
 name: 'IndexNow'
 on:
   schedule:
-    # Set the schedule time
-    - cron: '0 16 * * *'  # UTC 16시 = 한국 시간 01시
-
-  # Allows you to run this workflow manually from the Actions tab
+    - cron: '0 16 * * *'
   workflow_dispatch:
 
 jobs:
   check-and-submit:
     runs-on: ubuntu-latest
     steps:
-      - name: indexnow-action-bing
+      - name: indexnow-action
         uses: bojieyang/indexnow-action@v2
         with:
           sitemap-location: 'https://trendprov.github.io/sitemap.xml'
           key: ${{ secrets.INDEXNOW_KEY }}
           endpoint: 'api.indexnow.org'
+          since: 30        # 파일 생성 날짜가 달라도 포함되도록 기간을 넉넉히
+          since-unit: day
+          limit: 100
+          timeout: 30000
