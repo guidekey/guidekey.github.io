@@ -40,15 +40,26 @@ jobs:
            URL_LIST="${URL_LIST%,}]"
            echo "Sample URL format:"
            echo $URL_LIST | grep -o '"https://[^"]*"' | head -n 1
-           
-           curl -X POST "https://api.indexnow.org/indexnow" \
+
+           # API 호출 결과 저장 및 출력
+           response=$(curl -s -w "\nHTTP Status: %{http_code}" -X POST "https://api.indexnow.org/indexnow" \
            -H "Content-Type: application/json" \
            -d "{
              \"host\": \"trendprov.github.io\",
              \"key\": \"${{ secrets.INDEXNOW_KEY }}\",
              \"urlList\": $URL_LIST,
              \"keyLocation\": \"https://trendprov.github.io/${{ secrets.INDEXNOW_KEY }}.txt\"
-           }"
+           }")
+           
+           echo "IndexNow API Response:"
+           echo "$response"
+           
+           # HTTP 상태 코드 확인
+           if echo "$response" | grep -q "HTTP Status: 200"; then
+             echo "URLs successfully submitted to search engines!"
+           else
+             echo "Error submitting URLs. Please check the response above."
+           fi
          else
            echo "No markdown files found in _posts directory in the last 24 hours"
          fi
