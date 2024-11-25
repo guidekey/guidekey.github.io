@@ -1,5 +1,3 @@
-# .github/workflows/IndexNow.yml
-
 name: 'IndexNow'
 on:
   schedule:
@@ -13,15 +11,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # 전체 히스토리 가져오기
+
+      - name: Debug Info
+        run: |
+          echo "Current branch: $(git branch --show-current)"
+          echo "Last commit: $(git log -1 --pretty=format:'%h - %s')"
+          echo "All _posts files:"
+          ls -la _posts/
+          echo "Recent git log:"
+          git log --since="24 hours ago" --name-only
 
       - name: Get changed files and submit URLs
         run: |
-          # 지난 24시간 동안 변경된 파일 찾기
-          CHANGED_FILES=$(git log --since="24 hours ago" --name-only --pretty=format: | grep "^_posts/.*\.md$" || true)
+          # 최근 커밋과 그 이전 커밋 사이의 변경된 파일 찾기
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD | grep "^_posts/.*\.md$" || true)
           
           if [ ! -z "$CHANGED_FILES" ]; then
-            echo "Changed files found in the last 24 hours:"
+            echo "Changed files found:"
             echo "$CHANGED_FILES"
             
             # URL 리스트 생성
@@ -32,7 +39,6 @@ jobs:
               URL_PATH=$(echo "$file" | sed -E 's/_posts\/[0-9]{4}-[0-9]{2}-[0-9]{2}-(.*)\.md/\1/')
               URL="https://trendprov.github.io/shopping/$URL_PATH/"
               
-              # 중복 URL 체크
               if [ -z "${seen_urls[$URL]}" ]; then
                 seen_urls[$URL]=1
                 URL_LIST="$URL_LIST\"$URL\","
@@ -41,10 +47,8 @@ jobs:
             done
             
             URL_LIST="${URL_LIST%,}]"
-            
             echo "Submitting URLs: $URL_LIST"
             
-            # IndexNow API 호출
             curl -X POST "https://api.indexnow.org/indexnow" \
             -H "Content-Type: application/json" \
             -d "{
@@ -54,5 +58,5 @@ jobs:
               \"keyLocation\": \"https://trendprov.github.io/${{ secrets.INDEXNOW_KEY }}.txt\"
             }"
           else
-            echo "No markdown files changed in _posts directory in the last 24 hours"
+            echo "No markdown files changed between last two commits"
           fi
