@@ -1,3 +1,5 @@
+# .github/workflows/IndexNow.yml
+
 name: 'IndexNow'
 on:
   schedule:
@@ -11,9 +13,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 전체 히스토리 가져오기
+          fetch-depth: 0
 
-      - name: Get recently changed files and submit URLs
+      - name: Get changed files and submit URLs
         run: |
           # 지난 24시간 동안 변경된 파일 찾기
           CHANGED_FILES=$(git log --since="24 hours ago" --name-only --pretty=format: | grep "^_posts/.*\.md$" || true)
@@ -24,11 +26,9 @@ jobs:
             
             # URL 리스트 생성
             URL_LIST="["
-            # 중복 URL 제거를 위한 배열
             declare -A seen_urls
             
             for file in $CHANGED_FILES; do
-              # 파일명에서 날짜와 .md 제거, URL 형식으로 변환
               URL_PATH=$(echo "$file" | sed -E 's/_posts\/[0-9]{4}-[0-9]{2}-[0-9]{2}-(.*)\.md/\1/')
               URL="https://trendprov.github.io/shopping/$URL_PATH/"
               
@@ -40,7 +40,7 @@ jobs:
               fi
             done
             
-            URL_LIST="${URL_LIST%,}]"  # 마지막 쉼표 제거
+            URL_LIST="${URL_LIST%,}]"
             
             echo "Submitting URLs: $URL_LIST"
             
