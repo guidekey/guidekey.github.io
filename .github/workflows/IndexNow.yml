@@ -1,16 +1,17 @@
 name: 'IndexNow'
 on:
   schedule:
-    # 매일 밤 2시에 워크플로우 실행
-    - cron: '0 2 * * *'  # 별표 사이에 공백 추가
-  # 저장소의 Actions 탭에서 수동으로 실행가능하게 하는 옵션
+    # Set the schedule time
+    - cron: '0 2 * * *'
+
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
   check-and-submit:
     runs-on: ubuntu-latest
     steps:
-      - name: indexnow-action
+      - name: indexnow-action-bing
         uses: bojieyang/indexnow-action@v2
         with:
           sitemap-location: 'https://trendprov.github.io/sitemap.xml'
