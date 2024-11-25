@@ -3,12 +3,10 @@ on:
   push:
     branches:
       - main
-      - master
-    paths-ignore:
-      - .gitignore
-      - README.md
-      - LICENSE
-  workflow_dispatch:
+    paths:
+      - '_posts/**'  # _posts 폴더의 변경사항만 감지
+      - '_draft/**'  # 드래프트 포스트도 포함
+  workflow_dispatch:  # 수동 실행 옵션
 
 permissions:
   contents: read
@@ -62,3 +60,14 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  indexnow:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Submit URLs to IndexNow
+        uses: bojieyang/indexnow-action@v2
+        with:
+          sitemap-location: "https://trendprov.github.io/sitemap.xml"  # 여기에 실제 도메인 입력
+          key: ${{ secrets.INDEXNOW_KEY }}
+          endpoint: "api.indexnow.org"
