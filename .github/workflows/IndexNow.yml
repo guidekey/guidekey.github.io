@@ -11,21 +11,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 전체 히스토리 가져오기
+          fetch-depth: 0
 
-      - name: Debug Info
+      - name: Debug Git Info
         run: |
-          echo "Current branch: $(git branch --show-current)"
-          echo "Last commit: $(git log -1 --pretty=format:'%h - %s')"
-          echo "All _posts files:"
+          echo "===== Git Status ====="
+          git status
+          echo "===== Current Branch ====="
+          git branch
+          echo "===== Latest Commits ====="
+          git log --oneline -n 5
+          echo "===== Files in _posts ====="
           ls -la _posts/
-          echo "Recent git log:"
-          git log --since="24 hours ago" --name-only
+          echo "===== Latest Changes ====="
+          git log -p -n 1 _posts/
 
       - name: Get changed files and submit URLs
         run: |
-          # 최근 커밋과 그 이전 커밋 사이의 변경된 파일 찾기
-          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD | grep "^_posts/.*\.md$" || true)
+          # 최근 24시간 동안의 변경사항을 직접 확인
+          CHANGED_FILES=$(find _posts/ -name "*.md" -mtime -1 -type f)
           
           if [ ! -z "$CHANGED_FILES" ]; then
             echo "Changed files found:"
@@ -58,5 +62,5 @@ jobs:
               \"keyLocation\": \"https://trendprov.github.io/${{ secrets.INDEXNOW_KEY }}.txt\"
             }"
           else
-            echo "No markdown files changed between last two commits"
+            echo "No markdown files found in _posts directory in the last 24 hours"
           fi
