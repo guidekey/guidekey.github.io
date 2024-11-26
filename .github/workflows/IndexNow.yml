@@ -46,9 +46,9 @@ jobs:
            -H "Content-Type: application/json" \
            -d "{
              \"host\": \"guidekey.github.io\",
-             \"key\": \"c7f72fd3f04143cc94142a65e2fbee27\",
+             \"key\": \"${{ secrets.INDEXNOW_KEY }}\",
              \"urlList\": $URL_LIST,
-             \"keyLocation\": \"https://guidekey.github.io/c7f72fd3f04143cc94142a65e2fbee27.txt\"
+             \"keyLocation\": \"https://guidekey.github.io/${{ secrets.INDEXNOW_KEY }}.txt\"
            }")
            
            echo "IndexNow API Response:"
