@@ -1,10 +1,11 @@
 name: 'IndexNow'
 on:
   schedule:
-    - cron: '0 16 * * *'  # UTC 16:00 = KST 01:00 (cron 표현식 수정)
+    - cron: '0 16 * * *'  # UTC 16:00 = KST 01:00
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: 
+      - master    # main을 master로 변경
     paths:
       - '_posts/**'
 
