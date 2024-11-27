@@ -2,12 +2,8 @@ name: 'IndexNow'
 on:
   schedule:
     - cron: '25 19 * * *'  # UTC 19:25 = KST 04:25
-  workflow_dispatch:
-  push:
-    branches: 
-      - master
-    paths:
-      - '_posts/**'
+  # push 이벤트 제거 (스케줄만 유지)
+  workflow_dispatch:  # 수동 실행 옵션 유지
 
 jobs:
   submit-urls:
