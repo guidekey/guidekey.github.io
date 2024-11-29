@@ -1,18 +1,24 @@
-name:'I'
-on:{schedule:[{cron:'25 19 * * *'}],workflow_dispatch:null}
+name: 'I'
+on:
+  schedule:
+    - cron: '25 19 * * *'
+  workflow_dispatch:
+
 jobs:
   s:
-    runs-on:ubuntu-latest
-    permissions:{contents:read}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - run:|
+      - run: |
           e(){echo "$@";}
           e "GC:";e " R:${{g.r}}";e " F:${{g.f}}";e " E:${{g.e}}";e "T:";e " U:$(date -u)";e " K:$(TZ=A/S date)"
-      - uses:actions/checkout@v4
-        with:{fetch-depth:0}
-      - run:|
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: |
           pwd;ls -la;e "P:";ls -la *p/||e "*p !"
-      - run:|
+      - run: |
           C=$(find _p/ -name "*.md" -mtime -1 -type f)
           [ ! -z "$C" ]&&{
             e "F:";e "$C"
@@ -31,7 +37,7 @@ jobs:
             e "R:";e "$r"
             echo "$r"|grep -q "S:200"&&{e "OK!";}||{e "ERR";exit 1;}
           }||e "No *.md < 24h"
-      - if:always()
-        run:|
+      - if: always()
+        run: |
           [ "${{j.s}}"="s" ]&&e "✅"||e "❌"
           e "W:$(date)"
