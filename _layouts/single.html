@@ -18,44 +18,49 @@ layout: default
       </header>
 
       <section class="page__content" itemprop="text">
-        {{ content }}
+       {{ content }}
 
-        <!-- 관련 제품 추천 섹션 -->
-        <div class="related-posts">
-          <h2>👉 유사 상품 추천</h2>
-          <ul>
-            {% assign current_product = page.title | split: " " | first %}
-            {% assign matched_posts = '' | split: '' %}
-            
-            {% for post in site.posts %}
-              {% if post.url != page.url %}
-                {% assign other_product = post.title | split: " " | first %}
-                
-                <!-- 첫 단어가 동일하거나 포함관계인 경우만 매칭 -->
-                {% if other_product == current_product or other_product contains current_product or current_product contains other_product %}
-                  {% assign matched_posts = matched_posts | push: post %}
-                {% endif %}
-              {% endif %}
-            {% endfor %}
-            
-            {% if matched_posts.size > 0 %}
-              {% for post in matched_posts limit:8 %}
-                <li class="related-item">
-                  <a href="{{ site.baseurl }}{{ post.url }}" class="related-link">
-                    <div class="related-title">
-                      <!-- 첫 단어 강조 표시 -->
-                      <strong>{{ post.title | split: " " | first }}</strong>
-                      {{ post.title | split: " " | shift | join: " " }}
-                    </div>
-                  </a>
-                </li>
-              {% endfor %}
-            {% else %}
-              <li>관련 상품을 찾을 수 없습니다.</li>
-            {% endif %}
-          </ul>
-        </div>
-      </section>
+       <!-- 관련 제품 추천 섹션 -->
+       <div class="related-posts">
+         <h2>👉 유사 상품 추천</h2>
+         
+         <!-- 디버깅용 -->
+         <p>현재 상품: {{ page.title | split: " " | first }}</p>
+         
+         <ul>
+           {% assign current_product = page.title | split: " " | first | downcase %}
+           {% assign matched_posts = '' | split: '' %}
+           
+           {% for post in site.posts %}
+             {% if post.url != page.url %}
+               {% assign other_product = post.title | split: " " | first | downcase %}
+               
+               <!-- 디버깅용 -->
+               <p>비교 상품: {{ other_product }}</p>
+               
+               {% if other_product contains current_product or current_product contains other_product %}
+                 <li class="related-item">
+                   <a href="{{ site.baseurl }}{{ post.url }}" class="related-link">
+                     <div class="related-title">
+                       <strong>{{ post.title | split: " " | first }}</strong>
+                       {{ post.title | split: " " | shift | join: " " }}
+                     </div>
+                   </a>
+                 </li>
+                 {% assign matched_posts = matched_posts | push: post %}
+               {% endif %}
+             {% endif %}
+           {% endfor %}
+           
+           <!-- 디버깅용 -->
+           <p>찾은 매칭 수: {{ matched_posts.size }}</p>
+
+           {% if matched_posts.size == 0 %}
+             <li>관련 상품을 찾을 수 없습니다.</li>
+           {% endif %}
+         </ul>
+       </div>
+     </section>
     
 
 
