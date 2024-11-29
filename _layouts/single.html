@@ -23,50 +23,54 @@ layout: default
         <div class="related-posts">
           <h2>👉 유사 상품 추천</h2>
           <ul>
-            <!-- 현재 게시물의 첫 번째 키워드(제품명) 추출 -->
-            {% assign keywords = page.title | split: " " %}
-            {% assign product_name = keywords | first %}
-            
-            <!-- 디버깅용 -->
-            <!-- <div>현재 제품: {{ product_name }}</div> -->
-            
+            {% assign title_words = page.title | downcase | split: " " %}
             {% assign matched_posts = '' | split: '' %}
             
-            <!-- 모든 게시물 검사 -->
             {% for post in site.posts %}
               {% if post.url != page.url %}
-                {% assign other_keywords = post.title | split: " " %}
-                {% assign other_product = other_keywords | first %}
+                {% assign other_words = post.title | downcase | split: " " %}
+                {% assign found_match = false %}
                 
-                <!-- 디버깅용 -->
-                <!-- <div>비교 제품: {{ other_product }}</div> -->
-                
-                {% if other_product contains product_name or product_name contains other_product %}
-                  {% assign matched_posts = matched_posts | push: post %}
-                {% endif %}
+                {% for word in title_words %}
+                  {% if word.size >= 2 %}  <!-- 2글자 이상인 단어만 검사 -->
+                    {% for other_word in other_words %}
+                      {% if other_word.size >= 2 and other_word contains word or word contains other_word %}
+                        {% unless found_match %}
+                          {% assign matched_posts = matched_posts | push: post %}
+                          {% assign found_match = true %}
+                        {% endunless %}
+                        {% break %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                  {% if found_match %}
+                    {% break %}
+                  {% endif %}
+                {% endfor %}
               {% endif %}
             {% endfor %}
             
-            <!-- 최대 8개까지 표시 -->
-            {% for post in matched_posts limit:8 %}
-              <li class="related-item">
-                <a href="{{ site.baseurl }}{{ post.url }}" class="related-link">
-                  <div class="related-title">
-                    {{ post.title }}
-                  </div>
-                </a>
-              </li>
-            {% endfor %}
+            {% assign total_matches = matched_posts | size %}
+            <!-- 디버깅용: <p>찾은 매칭 수: {{ total_matches }}</p> -->
             
-            {% if matched_posts.size == 0 %}
+            {% if total_matches > 0 %}
+              {% for post in matched_posts limit:8 %}
+                <li class="related-item">
+                  <a href="{{ site.baseurl }}{{ post.url }}" class="related-link">
+                    <div class="related-title">
+                      {{ post.title }}
+                    </div>
+                  </a>
+                </li>
+              {% endfor %}
+            {% else %}
               <li>관련 상품을 찾을 수 없습니다.</li>
             {% endif %}
           </ul>
         </div>
       </section>
     
-    
-      </section>
+
 
       <footer class="page__meta">
         {% if page.categories %}
