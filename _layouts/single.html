@@ -18,58 +18,40 @@ layout: default
       </header>
 
       <section class="page__content" itemprop="text">
-        {{ content }}
+       {{ content }}
 
-        <!-- 관련 제품 추천 섹션 -->
-        <div class="related-posts">
-          <h2>👉 유사 상품 추천</h2>
-          <ul>
-            {% assign title_words = page.title | downcase | split: " " %}
-            {% assign matched_posts = '' | split: '' %}
-            
-            {% for post in site.posts %}
-              {% if post.url != page.url %}
-                {% assign other_words = post.title | downcase | split: " " %}
-                {% assign found_match = false %}
-                
-                {% for word in title_words %}
-                  {% if word.size >= 2 %}  <!-- 2글자 이상인 단어만 검사 -->
-                    {% for other_word in other_words %}
-                      {% if other_word.size >= 2 and other_word contains word or word contains other_word %}
-                        {% unless found_match %}
-                          {% assign matched_posts = matched_posts | push: post %}
-                          {% assign found_match = true %}
-                        {% endunless %}
-                        {% break %}
-                      {% endif %}
-                    {% endfor %}
-                  {% endif %}
-                  {% if found_match %}
-                    {% break %}
-                  {% endif %}
-                {% endfor %}
-              {% endif %}
-            {% endfor %}
-            
-            {% assign total_matches = matched_posts | size %}
-            <!-- 디버깅용: <p>찾은 매칭 수: {{ total_matches }}</p> -->
-            
-            {% if total_matches > 0 %}
-              {% for post in matched_posts limit:8 %}
-                <li class="related-item">
-                  <a href="{{ site.baseurl }}{{ post.url }}" class="related-link">
-                    <div class="related-title">
-                      {{ post.title }}
-                    </div>
-                  </a>
-                </li>
-              {% endfor %}
-            {% else %}
-              <li>관련 상품을 찾을 수 없습니다.</li>
-            {% endif %}
-          </ul>
-        </div>
-      </section>
+       <div class="related-posts">
+         <h2>👉 유사 상품 추천</h2>
+         <ul>
+           {% assign current_words = page.title | downcase | split: " " | first %}
+           {% assign matched_posts = '' | split: '' %}
+           
+           {% for post in site.posts %}
+             {% if post.url != page.url %}
+               {% assign other_words = post.title | downcase | split: " " | first %}
+               
+               {% if other_words contains current_words or current_words contains other_words %}
+                 {% assign matched_posts = matched_posts | push: post %}
+               {% endif %}
+             {% endif %}
+           {% endfor %}
+           
+           {% if matched_posts.size > 0 %}
+             {% for post in matched_posts limit:8 %}
+               <li class="related-item">
+                 <a href="{{ site.baseurl }}{{ post.url }}" class="related-link">
+                   <div class="related-title">
+                     {{ post.title }}
+                   </div>
+                 </a>
+               </li>
+             {% endfor %}
+           {% else %}
+             <li>관련 상품을 찾을 수 없습니다.</li>
+           {% endif %}
+         </ul>
+       </div>
+     </section>
     
 
 
