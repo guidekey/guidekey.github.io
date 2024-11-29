@@ -12,7 +12,8 @@ jobs:
     steps:
       - run: |
           e(){echo "$@";}
-          e "GC:";e " R:${{g.r}}";e " F:${{g.f}}";e " E:${{g.e}}";e "T:";e " U:$(date -u)";e " K:$(TZ=A/S date)"
+          e "GC:";e " R:${{github.repository}}";e " F:${{github.ref}}";e " E:${{github.event_name}}"
+          e "T:";e " U:$(date -u)";e " K:$(TZ=A/S date)"
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -26,18 +27,18 @@ jobs:
             for f in $C;do
               N=$(basename "$f")
               P=$(echo "$N"|sed -E 's/^[0-9]{4}-[0-9]{2}-[0-9]{2}-//'|sed 's/--/-/g'|sed 's/\.md$//'|sed 's/-$//')
-              U="https://${{s.R}}/s/$P/"
+              U="https://${{secrets.REPO_URL}}/s/$P/"
               [ -z "${s[$U]}" ]&&{s[$U]=1;L="$L\"$U\",";e "P:$U";}
             done
             L="${L%,}]"
             e "S:";echo $L|grep -o '"https://[^"]*"'|head -n 1
             r=$(curl -s -w "\nS:%{http_code}" -X POST "https://api.i.org/i"\
             -H "C:a/j"\
-            -d "{\"h\":\"${{s.R}}\",\"k\":\"${{s.I}}\",\"u\":$L,\"l\":\"https://${{s.R}}/${{s.I}}.txt\"}")
+            -d "{\"h\":\"${{secrets.REPO_URL}}\",\"k\":\"${{secrets.INDEXNOW_KEY}}\",\"u\":$L,\"l\":\"https://${{secrets.REPO_URL}}/${{secrets.INDEXNOW_KEY}}.txt\"}")
             e "R:";e "$r"
             echo "$r"|grep -q "S:200"&&{e "OK!";}||{e "ERR";exit 1;}
           }||e "No *.md < 24h"
       - if: always()
         run: |
-          [ "${{j.s}}"="s" ]&&e "✅"||e "❌"
+          [ "${{job.status}}"="success" ]&&e "✅"||e "❌"
           e "W:$(date)"
