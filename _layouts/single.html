@@ -19,20 +19,31 @@ layout: default
 
       <section class="page__content" itemprop="text">
        {{ content }}
-
        <div class="related-posts">
          <h2>👉 유사 상품 추천</h2>
          <ul>
-           {% assign current_words = page.title | downcase | split: " " | first %}
+           {% assign current_words = page.title | downcase | split: " " %}
            {% assign matched_posts = '' | split: '' %}
            
            {% for post in site.posts %}
              {% if post.url != page.url %}
-               {% assign other_words = post.title | downcase | split: " " | first %}
+               {% assign other_words = post.title | downcase | split: " " %}
+               {% assign matched = false %}
                
-               {% if other_words contains current_words or current_words contains other_words %}
-                 {% assign matched_posts = matched_posts | push: post %}
-               {% endif %}
+               {% for current_word in current_words %}
+                 {% for other_word in other_words %}
+                   {% if other_word contains current_word or current_word contains other_word %}
+                     {% unless matched %}
+                       {% assign matched_posts = matched_posts | push: post %}
+                       {% assign matched = true %}
+                     {% endunless %}
+                     {% break %}
+                   {% endif %}
+                 {% endfor %}
+                 {% if matched %}
+                   {% break %}
+                 {% endif %}
+               {% endfor %}
              {% endif %}
            {% endfor %}
            
@@ -40,9 +51,7 @@ layout: default
              {% for post in matched_posts limit:8 %}
                <li class="related-item">
                  <a href="{{ site.baseurl }}{{ post.url }}" class="related-link">
-                   <div class="related-title">
-                     {{ post.title }}
-                   </div>
+                   <div class="related-title">{{ post.title }}</div>
                  </a>
                </li>
              {% endfor %}
