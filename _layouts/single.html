@@ -22,51 +22,65 @@ layout: default
         <section class="page__content" itemprop="text">
        {{ content }}
 
+       <section class="page__content" itemprop="text">
+       {{ content }}
+
        <!-- 관련 제품 추천 섹션 -->
        <div class="related-posts">
-         <h2>👉 관련 제품 추천 (최대 5개)</h2>
+         <h2>👉 관련 제품 추천</h2>
          <ul>
-           {% assign maxRelated = 5 %}
+           {% assign maxRelated = 8 %}
            {% assign relatedCount = 0 %}
+           {% assign relatedPosts = '' | split: '' %}
            
-           <!-- 현재 제품의 첫 번째 단어 추출 -->
-           {% assign title_words = page.title | split: " " %}
-           {% assign first_word = title_words | first %}
-           {% assign second_word = title_words[1] | default: "" %}
+           <!-- 현재 제품의 모든 키워드 추출 -->
+           {% assign current_keywords = page.title | downcase | split: " " %}
            
            {% for post in site.posts %}
              {% if post.url != page.url %}
-               {% assign other_title_words = post.title | split: " " %}
-               {% assign other_first = other_title_words | first %}
-               {% assign other_second = other_title_words[1] | default: "" %}
+               {% assign matchScore = 0 %}
+               {% assign other_keywords = post.title | downcase | split: " " %}
                
-               <!-- 첫 번째 또는 두 번째 단어가 매칭되는 경우 -->
-               {% if first_word contains other_first or other_first contains first_word 
-                   or first_word contains other_second or other_second contains first_word
-                   or second_word contains other_first or other_first contains second_word %}
-                 <li class="related-item">
-                   <a href="{{ site.baseurl }}{{ post.url }}" class="related-link">
-                     <div class="related-title">
-                       {{ post.title | truncate: 60 }}
-                     </div>
-                     <div class="keywords">
-                       <small>매칭: {{ first_word }} ↔ {{ other_first }}</small>
-                     </div>
-                     <div class="related-tags">
-                       {% for tag in post.tags limit:3 %}
-                         {% if tag != "shopping" and tag != "Top10" %}
-                           <span class="tag">{{ tag }}</span>
-                         {% endif %}
-                       {% endfor %}
-                     </div>
-                   </a>
-                 </li>
-                 {% assign relatedCount = relatedCount | plus: 1 %}
-                 {% if relatedCount >= maxRelated %}
-                   {% break %}
-                 {% endif %}
+               <!-- 모든 키워드 조합 확인 -->
+               {% for keyword in current_keywords %}
+                 {% for other_keyword in other_keywords %}
+                   {% if other_keyword contains keyword or keyword contains other_keyword %}
+                     {% assign matchScore = matchScore | plus: 1 %}
+                   {% endif %}
+                 {% endfor %}
+               {% endfor %}
+               
+               <!-- 매칭 점수가 있는 경우 -->
+               {% if matchScore > 0 %}
+                 {% assign post_info = '' | split: '' %}
+                 {% assign post_info = post_info | push: matchScore %}
+                 {% assign post_info = post_info | push: post %}
+                 {% assign relatedPosts = relatedPosts | push: post_info %}
                {% endif %}
              {% endif %}
+           {% endfor %}
+           
+           <!-- 매칭 점수로 정렬 -->
+           {% assign sortedPosts = relatedPosts | sort | reverse %}
+           
+           <!-- 상위 8개 포스트 출력 -->
+           {% for post_info in sortedPosts limit:maxRelated %}
+             {% assign post = post_info[1] %}
+             <li class="related-item">
+               <a href="{{ site.baseurl }}{{ post.url }}" class="related-link">
+                 <div class="related-title">
+                   {{ post.title | truncate: 60 }}
+                 </div>
+                 <div class="related-tags">
+                   {% for tag in post.tags limit:3 %}
+                     {% if tag != "shopping" and tag != "Top10" %}
+                       <span class="tag">{{ tag }}</span>
+                     {% endif %}
+                   {% endfor %}
+                 </div>
+               </a>
+             </li>
+             {% assign relatedCount = relatedCount | plus: 1 %}
            {% endfor %}
 
            {% if relatedCount == 0 %}
@@ -74,6 +88,7 @@ layout: default
            {% endif %}
          </ul>
        </div>
+    
     
       </section>
 
