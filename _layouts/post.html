@@ -1,80 +1,81 @@
----
-layout: default
----
-
+{% raw %}
 <article class="post">
-  <h1>{{ page.title }}</h1>
+ <h1>{{ page.title }}</h1>
 
-  <div class="entry">
-    {{ content }}
-  </div>
+ <div class="entry">
+   {{ content }}
+ </div>
 
-  <div class="related-posts">
-    <h2>👉 관련 제품 추천</h2>
-    <ul>
-      {% assign maxRelated = 5 %}
-      {% assign relatedCount = 0 %}
-      {% assign current_title_words = page.title | split: " " | first %}
-      
-      {% for post in site.posts %}
-        {% if post.url != page.url %}
-          {% assign sameTagCount = 0 %}
-          {% assign titleMatchCount = 0 %}
-          
-          <!-- 태그 매칭 (쇼핑, Top10 제외) -->
-          {% for tag in post.tags %}
-            {% if tag != "shopping" and tag != "Top10" %}
-              {% if page.tags contains tag %}
-                {% assign sameTagCount = sameTagCount | plus: 2 %}
-              {% endif %}
-            {% endif %}
-          {% endfor %}
-          
-          <!-- 제품명 유사도 (첫 단어로 비교) -->
-          {% assign other_title_words = post.title | split: " " | first %}
-          {% if current_title_words == other_title_words %}
-            {% assign titleMatchCount = titleMatchCount | plus: 3 %}
-          {% endif %}
-          
-          <!-- 총 매칭 점수 계산 -->
-          {% assign matchScore = sameTagCount | plus: titleMatchCount %}
-          
-          {% if matchScore > 2 %}
-            {% if relatedCount < maxRelated %}
-              <li class="related-item">
-                <a href="{{ site.baseurl }}{{ post.url }}" class="related-link">
-                  <div class="related-title">
-                    {{ post.title | truncate: 60 }}
-                  </div>
-                  <div class="related-tags">
-                    {% for tag in post.tags limit:3 %}
-                      {% if tag != "shopping" and tag != "Top10" %}
-                        <span class="tag">{{ tag }}</span>
-                      {% endif %}
-                    {% endfor %}
-                  </div>
-                </a>
-              </li>
-              {% assign relatedCount = relatedCount | plus: 1 %}
-            {% endif %}
-          {% endif %}
-        {% endif %}
-      {% endfor %}
-    </ul>
-  </div>
+ <div class="related-posts">
+   <h2>👉 관련 제품 추천</h2>
+   <ul>
+     {% assign maxRelated = 5 %}
+     {% assign relatedCount = 0 %}
+     
+     {% for post in site.posts %}
+       {% if post.url != page.url %}
+         {% assign matchScore = 0 %}
+         
+         <!-- 제목에서 키워드 매칭 -->
+         {% assign current_keywords = page.title | downcase | split: " " %}
+         {% assign other_keywords = post.title | downcase | split: " " %}
+         
+         {% for keyword in current_keywords %}
+           {% for other_keyword in other_keywords %}
+             {% if other_keyword contains keyword or keyword contains other_keyword %}
+               {% assign matchScore = matchScore | plus: 2 %}
+               {% break %}
+             {% endif %}
+           {% endfor %}
+         {% endfor %}
+         
+         <!-- 태그 매칭 -->
+         {% for tag in post.tags %}
+           {% if page.tags contains tag %}
+             {% if tag != "shopping" and tag != "Top10" %}
+               {% assign matchScore = matchScore | plus: 1 %}
+             {% endif %}
+           {% endif %}
+         {% endfor %}
+         
+         {% if matchScore > 2 %}
+           {% if relatedCount < maxRelated %}
+             <li class="related-item">
+               <a href="{{ site.baseurl }}{{ post.url }}" class="related-link">
+                 <div class="related-title">
+                   {{ post.title | truncate: 60 }}
+                 </div>
+                 <div class="related-score">관련도: {{ matchScore }}</div>
+                 <div class="related-tags">
+                   {% for tag in post.tags limit:3 %}
+                     {% if tag != "shopping" and tag != "Top10" %}
+                       <span class="tag">{{ tag }}</span>
+                     {% endif %}
+                   {% endfor %}
+                 </div>
+               </a>
+             </li>
+             {% assign relatedCount = relatedCount | plus: 1 %}
+           {% endif %}
+         {% endif %}
+       {% endif %}
+     {% endfor %}
+   </ul>
+ </div>
 
-  <div class="post-meta">
-    <div class="date">
-      작성일: {{ page.date | date: "%Y-%m-%d" }}
-    </div>
-    <div class="categories">
-      카테고리: {{ page.categories | join: ", " }}
-    </div>
-    <div class="tags">
-      태그: 
-      {% for tag in page.tags %}
-        <span class="tag">{{ tag }}</span>
-      {% endfor %}
-    </div>
-  </div>
+ <div class="post-meta">
+   <div class="date">
+     작성일: {{ page.date | date: "%Y-%m-%d" }}
+   </div>
+   <div class="categories">
+     카테고리: {{ page.categories | join: ", " }}
+   </div>
+   <div class="tags">
+     태그: 
+     {% for tag in page.tags %}
+       <span class="tag">{{ tag }}</span>
+     {% endfor %}
+   </div>
+ </div>
 </article>
+{% endraw %}
