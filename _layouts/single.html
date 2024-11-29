@@ -22,28 +22,15 @@ layout: default
        <div class="related-posts">
          <h2>👉 유사 상품 추천</h2>
          <ul>
-           {% assign current_words = page.title | downcase | split: " " %}
+           {% assign current_title = page.title | split: "[" | first | strip %}
            {% assign matched_posts = '' | split: '' %}
            
            {% for post in site.posts %}
              {% if post.url != page.url %}
-               {% assign other_words = post.title | downcase | split: " " %}
-               {% assign matched = false %}
-               
-               {% for current_word in current_words %}
-                 {% for other_word in other_words %}
-                   {% if other_word contains current_word or current_word contains other_word %}
-                     {% unless matched %}
-                       {% assign matched_posts = matched_posts | push: post %}
-                       {% assign matched = true %}
-                     {% endunless %}
-                     {% break %}
-                   {% endif %}
-                 {% endfor %}
-                 {% if matched %}
-                   {% break %}
-                 {% endif %}
-               {% endfor %}
+               {% assign other_title = post.title | split: "[" | first | strip %}
+               {% if other_title contains current_title or current_title contains other_title %}
+                 {% assign matched_posts = matched_posts | push: post %}
+               {% endif %}
              {% endif %}
            {% endfor %}
            
@@ -59,7 +46,7 @@ layout: default
              <li>관련 상품을 찾을 수 없습니다.</li>
            {% endif %}
          </ul>
-       </div>
+        </div>
      </section>
     
 
